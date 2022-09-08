@@ -18,6 +18,7 @@ export default class PlaylisterView {
     init() {
         // @todo - ONCE YOU IMPLEMENT THE FOOLPROOF DESIGN STUFF YOU SHOULD PROBABLY
         // START THESE BUTTONS OFF AS DISABLED
+        this.enableButton('add-list-button');
         this.enableButton('undo-button');
         this.enableButton('redo-button');
         this.enableButton('close-button');
@@ -113,10 +114,25 @@ export default class PlaylisterView {
             itemDiv.classList.add("unselected-list-card");
             itemDiv.id = "playlist-card-" + (i + 1);
 
-            // PUT THE CONTENT INTO THE CARD
-            let itemText = document.createTextNode(song.title + " by " + song.artist);
-            itemDiv.appendChild(itemText);
+            // MAKE THE DELETE LIST BUTTON FOR THIS CARD
+             let deletePlaylistButton = document.createElement("input");
+             deletePlaylistButton.setAttribute("type", "button");
+             deletePlaylistButton.setAttribute("id", "delete-song-" + (i+1));
+             deletePlaylistButton.setAttribute("class", "list-card-button");
+             deletePlaylistButton.setAttribute("value", "X");
 
+
+            // PUT THE CONTENT INTO THE CARD
+            let itemTextNumber = document.createTextNode((i + 1) + ".");
+            let itemText = document.createTextNode(song.title + " by " + song.artist);
+            var a = document.createElement('a');
+            let desirelink = "https://www.youtube.com/watch?v=" + song.youTubeId;
+            a.href = desirelink;
+            itemDiv.appendChild(itemTextNumber);
+            a.appendChild(itemText);
+            itemDiv.appendChild(a);
+            //itemDiv.appendChild(itemText);
+            itemDiv.appendChild(deletePlaylistButton);
             // AND PUT THE CARD INTO THE UI
             itemsDiv.appendChild(itemDiv);
         }

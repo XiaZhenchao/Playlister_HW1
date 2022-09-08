@@ -84,6 +84,13 @@ export default class PlaylisterModel {
         this.deleteListId = initId;
     }
 
+    RefreshSong()
+    {
+        this.view.refreshPlaylist(this.currentList);
+        this.saveLists();
+    }
+    
+
     toggleConfirmDialogOpen() {
         this.confirmDialogOpen = !this.confirmDialogOpen;
         this.view.updateToolbarButtons(this);
@@ -179,6 +186,15 @@ export default class PlaylisterModel {
         }        
     }
 
+    saveEditIndex(index)
+    {
+        this.EditIndex = index;
+    }
+    loadEditIndex()
+    {
+        return this.EditIndex;
+    }
+
     saveLists() {
         let playlistsString = JSON.stringify(this.playlists);
         localStorage.setItem("recent_work", playlistsString);
@@ -242,6 +258,43 @@ export default class PlaylisterModel {
             this.view.refreshPlaylist(this.currentList);
         }
         this.saveLists();
+    }
+
+    // ADD SONG FUNCIONS
+    addSong(initSong, initArtist, initId)
+    {
+        let OneSong =
+        {
+            title: initSong,
+            artist: initArtist,
+            youTubeId: initId
+        }
+        this.currentList.songs.push(OneSong);
+        this.view.refreshPlaylist(this.currentList);
+    }
+
+    // EDITING THE SONG
+    EditSong(index)
+    {
+        let EditListModal = document.getElementById("edit-song-modal");
+        EditListModal.classList.add("is-visible");
+        this.toggleConfirmDialogOpen();
+        document.getElementById("inputTtitle").value = this.getSong(index).title;
+        document.getElementById("inputArtist").value = this.getSong(index).artist;
+        document.getElementById("inputyouTubeId").value = this.getSong(index).youTubeId;
+    }
+
+    //DELETING THE SONG
+    DeleteSong(index)
+    {
+        let songName = this.getSong(index).title;
+        this.currentList.songs.splice(index,1);
+        let deleteSongSpan = document.getElementById("delete-song-span");
+        deleteSongSpan.innerHTML = "";
+        deleteSongSpan.appendChild(document.createTextNode(songName));
+        let RemoveSongModal = document.getElementById("delete-song-modal");
+        RemoveSongModal.classList.add("is-visible");
+        this.toggleConfirmDialogOpen();
     }
 
     // SIMPLE UNDO/REDO FUNCTIONS, NOTE THESE USE TRANSACTIONS

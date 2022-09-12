@@ -1,6 +1,9 @@
 import jsTPS from "../common/jsTPS.js";
 import Playlist from "./Playlist.js";
 import MoveSong_Transaction from "./transactions/MoveSong_Transaction.js";
+import AddSong_Transaction from "./transactions/AddSong_Transaction.js";
+import EditSong_Transaction from "./transactions/EditSong_Transaction.js"
+import RemoveSong_Transaction from "./transactions/RemoveSong_Transaction.js";
 
 /**
  * PlaylisterModel.js
@@ -195,6 +198,16 @@ export default class PlaylisterModel {
         return this.EditIndex;
     }
 
+    saveDeleteIndex(index)
+    {
+        this.DeleteIndex = index;
+    }
+
+    loadDeleteIndex(index)
+    {
+        return this.DeleteIndex;ß
+    }
+
     saveLists() {
         let playlistsString = JSON.stringify(this.playlists);
         localStorage.setItem("recent_work", playlistsString);
@@ -273,29 +286,31 @@ export default class PlaylisterModel {
         this.view.refreshPlaylist(this.currentList);
     }
 
-    // EDITING THE SONG
-    EditSong(index)
+     EditSong(index,Song,Artist,Id)
     {
-        let EditListModal = document.getElementById("edit-song-modal");
-        EditListModal.classList.add("is-visible");
-        this.toggleConfirmDialogOpen();
-        document.getElementById("inputTtitle").value = this.getSong(index).title;
-        document.getElementById("inputArtist").value = this.getSong(index).artist;
-        document.getElementById("inputyouTubeId").value = this.getSong(index).youTubeId;
+        this.currentList.songs[index].title = Song;
+        this.currentList.songs[index].artist = Artist;
+        this.currentList.songs[index].youTubeId = Id;
+        this.view.refreshPlaylist(this.currentList);
+        this.saveLists();
     }
 
     //DELETING THE SONG
     DeleteSong(index)
     {
-        let songName = this.getSong(index).title;
         this.currentList.songs.splice(index,1);
-        let deleteSongSpan = document.getElementById("delete-song-span");
-        deleteSongSpan.innerHTML = "";
-        deleteSongSpan.appendChild(document.createTextNode(songName));
-        let RemoveSongModal = document.getElementById("delete-song-modal");
-        RemoveSongModal.classList.add("is-visible");
-        this.toggleConfirmDialogOpen();
+        this.view.refreshPlaylist(this.currentList);
+        this.saveLists();
     }
+
+    RedoDeleteSong(index,DeleteSong)
+    {
+        this.currentList.songs.splice(index, 0 , DeleteSong);
+        this.view.refreshPlaylist(this.currentList); 
+        this.saveLists();
+    }
+
+  
 
     // SIMPLE UNDO/REDO FUNCTIONS, NOTE THESE USE TRANSACTIONS
 
@@ -318,6 +333,27 @@ export default class PlaylisterModel {
 
     addMoveSongTransaction(fromIndex, onIndex) {
         let transaction = new MoveSong_Transaction(this, fromIndex, onIndex);
+        this.tps.addTransaction(transaction);
+        this.view.updateToolbarButtons(this);
+    }
+
+    addAddSongTransaction(initSong, initArtist, initId){
+        let transaction = new AddSong_Transaction(this,initSong, initArtist, initId);
+        this.tps.addTransaction(transaction);
+        this.view.updateToolbarButtons(this);
+    }
+
+    addEditSongTransaction(userEditIndex,InitSong, InitArtist, InityouTubeId, NewSong,NewArtist,NewyouTubeId){
+        let transaction = new EditSong_Transaction(this,userEditIndex,InitSong, InitArtist, InityouTubeId, NewSong,NewArtist,NewyouTubeId);
+        this.tps.addTransaction(transaction);
+        this.view.updateToolbarButtons(this);
+    }
+
+    addRemoveSongTransaction(userEditIndex)
+    {
+        let deleteSong = this.currentList.songs[userEditIndex];
+        let deletetitile = this.currentList.songs[userEditIndex].title;
+        let transaction = new RemoveSong_Transaction(this,userEditIndex,deleteSong);
         this.tps.addTransaction(transaction);
         this.view.updateToolbarButtons(this);
     }
